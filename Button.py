@@ -33,6 +33,7 @@ class Button:
         text_rect = text_surface.get_rect(center=self.rect.center)
         screen.blit(text_surface, text_rect)
 
+
     def handle_event(self, event: pygame.event) -> bool:
         """Handle mouse click events and execute the command"""
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -45,3 +46,7 @@ class Button:
     def set_command(self, new_command: Callable) -> None:
         """Change the button's command to a new function"""
         self.command = new_command
+
+    def is_pressed(self, mouse_pos) -> bool:
+        """Check if a mouse click event is pressed"""
+        return self.rect.collidepoint(mouse_pos)
