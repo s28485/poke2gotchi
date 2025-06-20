@@ -1,15 +1,16 @@
-from sys import set_coroutine_origin_tracking_depth
-
-import pygame
+"""
+Module used for pygame initialization
+"""
 import sys
 import json
 import os
-
+import pygame
+import Pet
 import Button
 
 if not os.path.exists("saves"):
     os.makedirs("saves")
-import Pet
+
 
 # Inicjalizacja Pygame
 pygame.init()
@@ -31,7 +32,6 @@ GREEN = (0, 255, 0)
 RED = (255, 0, 0)
 VIOLET = (73, 19, 99)
 
-# Czcionki
 font = pygame.font.SysFont(None, 36)
 
 # Obrazki do wyboru pokemona i skalowanie do odpowiednich rozmiarów
@@ -40,14 +40,13 @@ charmander_image = pygame.transform.scale(pygame.image.load("assets/charmander.p
 bulbasaur_image = pygame.transform.scale(pygame.image.load("assets/bulbasaur.png"), (200, 200))
 pikachu_image = pygame.transform.scale(pygame.image.load("assets/pikachu.png"), (200, 200))
 
-# @staticmethod
 def load(player_name) -> Pet:
     """
     Overrides a method from PyGame library
-    :param player_name: string
-    :return: Pet
+    :param player_name: Name of the player
+    :return: A pet object loaded from json data
     """
-    with open(f"saves/{player_name}.json", "r") as f:
+    with open(f"saves/{player_name}.json", "r", encoding='utf-8') as f:
         data = json.load(f)
     pet = Pet.Pet(data["name"])
     pet.hunger = data["hunger"]
@@ -59,6 +58,10 @@ def load(player_name) -> Pet:
 
 # Funkcja, która rysuje menu wyboru zwierzaka
 def choose_pet() -> Pet:
+    """
+    A function that displays available pets and lets player choose from them
+    :return: A chosen pet object
+    """
     screen.fill(BLACK)
     title_text = font.render("Wybierz swojego pokemona!", True, WHITE)
     screen.blit(title_text, (250, 50))
@@ -89,39 +92,11 @@ def choose_pet() -> Pet:
             pygame.display.update()
     return Pet.Pet(clicked_button.text)
 
-
-
-    # Jeżeli nie dokonamy wyboru w ciągu 5 minut, zostanie przypisany pikatchu
-    # if time_elapsed > 5 * 60 * 60:
-    #     pass
-    #     # screen.blit(pikachu_image, (270, 190))
-    #     # pygame.draw.rect(screen, VIOLET, (270, 400, 200, 50))
-    #     # pikachu_text = font.render("Pikachu", True, WHITE)
-    #     # screen.blit(pikachu_text, (275, 415))
-    # else:
-    #     pass
-    #     # Przycisk 1: Squirtle
-    #     # screen.blit(squirtle_image, (50, 190))
-    #     # pygame.draw.rect(screen, BLUE, (50, 400, 200, 50))
-    #     # squirtle_text = font.render("Squirtle", True, WHITE)
-    #     # screen.blit(squirtle_text, (55, 415))
-    #
-    #     # # Przycisk 2: Charmander
-    #     # screen.blit(charmander_image, (270, 190))
-    #     # pygame.draw.rect(screen, RED, (270, 400, 200, 50))
-    #     # cat_text = font.render("Charmander", True, WHITE)
-    #     # screen.blit(cat_text, (275, 415))
-    #     #
-    #     # # Przycisk 3: Bulbasaur
-    #     # screen.blit(bulbasaur_image, (490, 190))
-    #     # pygame.draw.rect(screen, GREEN, (490, 400, 200, 50))
-    #     # cat_text = font.render("Bulbasaur", True, WHITE)
-    #     # screen.blit(cat_text, (495, 415))
-
-
-
-
-def player_select_menu():
+def player_select_menu() -> None:
+    """
+    A function that displays a player selection menu
+    :return: None
+    """
     while True:
         screen.fill(BLACK)
         title = font.render("Wybierz gracza", True, WHITE)
@@ -129,14 +104,16 @@ def player_select_menu():
 
         files = [f[:-5] for f in os.listdir("saves") if f.endswith(".json")]
 
+        buttons = [
+            Button.Button(300, 120 + len(files) * 60, 200, 50, 'Nowy Gracz', GREEN, (0, 150, 0))
+        ]
+
         # Lista graczy
         for i, name in enumerate(files):
-            pygame.draw.rect(screen, BLUE, (300, 120 + i * 60, 200, 50))
-            screen.blit(font.render(name, True, WHITE), (320, 130 + i * 60))
+            buttons.append(Button.Button(300, 120 + i * 60, 200, 50, name, BLUE, (0, 0, 150)))
 
-        # Nowy gracz
-        pygame.draw.rect(screen, GREEN, (300, 120 + len(files) * 60, 200, 50))
-        screen.blit(font.render("Nowy gracz", True, BLACK), (310, 130 + len(files) * 60))
+        for button in buttons:
+            button.draw(screen)
 
         pygame.display.update()
 
@@ -164,6 +141,10 @@ def player_select_menu():
 
 # Nowy gracz - okno do wpisania nazwy
 def get_user_name() -> str:
+    """
+    A function that displays the text field where user can type his name
+    :return: new player name
+    """
     clock = pygame.time.Clock()
     pygame.display.set_mode([400, 400])
     user_text = ''
@@ -174,12 +155,12 @@ def get_user_name() -> str:
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    return user_text
                 if event.key == pygame.K_BACKSPACE:
                     user_text = user_text[:-1]
                 else:
                     user_text += event.unicode
-                if event.key == pygame.K_RETURN:
-                    return user_text
 
         screen.fill(BLACK)
         pygame.draw.rect(screen, WHITE, input_rec, 1)
@@ -192,15 +173,21 @@ def get_user_name() -> str:
 
 
 def main_menu() -> None:
+    """
+    Function that displays the main menu.
+    :return: None
+    """
     while True:
         screen.fill(BLACK)
         screen.blit(font.render("Pokegotchi", True, WHITE), (330, 100))
 
-        pygame.draw.rect(screen, GREEN, (300, 250, 200, 50))
-        screen.blit(font.render("Zagraj", True, BLACK), (360, 260))
+        buttons = [
+            Button.Button(300, 250, 200, 50, "Zagraj", GREEN, (0, 150, 0)),
+            Button.Button(300, 350, 200, 50, "Wyjdź", RED, (75, 0, 0))
+        ]
 
-        pygame.draw.rect(screen, RED, (300, 350, 200, 50))
-        screen.blit(font.render("Wyjdź", True, BLACK), (360, 360))
+        for button in buttons:
+            button.draw(screen)
 
         pygame.display.update()
 
@@ -221,19 +208,36 @@ def main_menu() -> None:
                     player_select_menu()
                     return
 
+                if 500 >= x >= 400 >= y >= 250:
+                    pygame.quit()
+                    sys.exit()
 
-# Główna pętla gry
-def game_loop(pet=None, player_name=None):
+
+def game_loop(pet=None, player_name=None) -> None:
+    """
+    Function which runs the game loop
+    :param pet: object of chosen pet
+    :param player_name: name of a player
+    :return: None
+    """
     running = True
+    lost = False
     while running:
         screen.fill(BLACK)
 
-        if pet is None:
-            choose_pet()
-        else:
+        if not lost:
             pet.update()
             pet.draw()
+        else:
+            lost_text = font.render(f'{player_name}, you\'ve lost', True, WHITE)
+            options_text = font.render("Press \'q\' to quit game, or \'m\' to enter main menu",
+                                       True,
+                                       (94, 94, 94))
+            lost_rect = lost_text.get_rect(center=(width // 2, height // 2))
+            screen.blit(lost_text, lost_rect)
+            screen.blit(options_text, (125, 570))
 
+        lost = pet.update()
 
             # EXP bar i przyciski jak wcześniej...
 
@@ -250,17 +254,9 @@ def game_loop(pet=None, player_name=None):
                 if event.key == pygame.K_q:
                     pygame.quit()
                     sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.MOUSEBUTTONDOWN and not lost:
                 x, y = event.pos
 
-
-                # if pet is None:
-                #     if 50 <= x <= 250 and 400 <= y <= 450:
-                #         pet = Pet.Pet("Squirtle")
-                #     elif 270 <= x <= 470 and 400 <= y <= 450:
-                #         pet = Pet.Pet("Charmander")
-                #     elif 490 <= x <= 690 and 400 <= y <= 450:
-                #         pet = Pet.Pet("Bulbasaur")
                 if 60 <= x <= 260 and 500 <= y <= 550:
                     pet.feed()
                     pet.gain_experience()
@@ -275,6 +271,4 @@ def game_loop(pet=None, player_name=None):
 
         pygame.display.update()
 
-
-# Uruchomienie gry
 main_menu()

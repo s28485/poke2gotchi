@@ -1,9 +1,9 @@
-# Tworzenie klasy Pokemon
+"""
+A module used for a Pet class
+"""
+import json
 import Button
 import pygame
-import sys
-import json
-import os
 
 # Kolory
 BLACK = (0, 0, 0)
@@ -30,6 +30,9 @@ screen = pygame.display.set_mode((width, height))
 
 
 class Pet:
+    """
+    A class that represents a pet
+    """
     def __init__(self, name):
 
         # Pet properties
@@ -50,9 +53,9 @@ class Pet:
         self.hunger_timer: int = 0  # Licznik czasu głodu (w klatkach)
         self.happiness_timer: int = 0
         self.sleepiness_timer: int = 0
-        self.hunger_increment_interval: int = 100  # Co ile klatek głód ma wzrosnąć (np. co 5 klatek)
-        self.happiness_increment_interval: int = 100  # Co ile klatek szczęście ma wzrosnąć (np. co 5 klatek)
-        self.sleepness_increment_interval: int = 300  # Co ile klatek zmęczenie ma wzrosnąć (np. co 5 klatek)
+        self.hunger_increment_interval: int = 100
+        self.happiness_increment_interval: int = 100
+        self.sleepness_increment_interval: int = 300
 
         self.load_image()
 
@@ -90,6 +93,11 @@ class Pet:
 
 
     def save(self, player_name) -> None:
+        """
+        A method used for saving a pet into a json file
+        :param player_name: Name of a player
+        :return: None
+        """
         data = {
             "name": self.name,
             "hunger": self.hunger,
@@ -98,46 +106,80 @@ class Pet:
             "level": self.level,
             "experience": self.experience
         }
-        with open(f"saves/{player_name}.json", "w") as f:
+        with open(f"saves/{player_name}.json", "w", encoding='utf-8') as f:
             json.dump(data, f)
         print("Gra zapisana!")
 
 
     def level_up(self) -> None:
+        """
+        A method used for leveling up the pet
+        :return: None
+        """
         self.level += 1
-        if self.level == 25 or self.level == 50:
+        if self.level in {25, 50}:
             self.evolve()
         self.experience = 0
 
     def gain_experience(self) -> None:
+        """
+        A method used for gaining experience
+        :return: None
+        """
         self.experience += 1
         if self.experience >= self.max_experience:
             self.level_up()
 
     def get_experience(self) -> int:
+        """
+        Getter for pets experience
+        :return: A pets experience
+        """
         return self.experience
 
     def evolve(self) -> None:
+        """
+        A method for evolving the pet
+        :return: None
+        """
         self.evolution_stage += 1
         self.name = evolution_lines[self.evolution_line][self.evolution_stage]
         self.load_image()
 
     def feed(self) -> None:
+        """
+        A method for feeding the pet
+        :return: None
+        """
         self.hunger = max(self.hunger + 10, 0)
 
     def play(self) -> None:
+        """
+        A method for playing with the pet
+        :return: None
+        """
         self.happiness = min(self.happiness + 10, 100)
         # self.sleepiness = min(self.sleepiness + 20, 100)
 
     def sleep(self) -> None:
+        """
+        A method for putting a pet to sleep
+        :return: None
+        """
         self.sleepiness = max(self.sleepiness + 10, 0)
 
-    def update(self) -> None:
+    def update(self) -> bool:
+        """
+        A method for updating pets stats
+        :return: True if all stats below zero, false otherwise
+        """
+
+        if self.hunger <= 0 and self.happiness <= 0 and self.sleepiness <= 0:
+            return True
+
         # For test purposes
         if self.hunger < 50 and self.happiness < 50 and self.sleepiness < 50:
             self.gain_experience()
-
-        # TODO: Jeśli wszystkie parametry spadną do 0, gra powinna się zakończyć.
 
         self.hunger_timer += 1
         if self.hunger_timer >= self.hunger_increment_interval:
@@ -154,7 +196,13 @@ class Pet:
             self.sleepiness = min(self.sleepiness - 1, 100)  # Zmniejszamy wypoczęcie
             self.sleepiness_timer = 0  # Resetujemy licznik
 
+        return False
+
     def draw(self) -> None:
+        """
+        A method for drawing the pet
+        :return: None
+        """
         # Rysuj pokemona
         screen.blit(self.image, (250, 250))
 
@@ -173,18 +221,25 @@ class Pet:
         screen.blit(sleep_text, (20, 140))
         screen.blit(level_text, (320, 20))
 
-        # pygame.draw.rect(screen, VIOLET, (520, 100, 200, 50))
-        # save_text = font.render("SAVE", True, WHITE)
-        # screen.blit(save_text, (545, 115))
-
         # Przyciski interakcji
         self.feed_button.draw(screen)
         self.play_button.draw(screen)
         self.sleep_button.draw(screen)
         self.save_button.draw(screen)
 
-        options_text = font.render("Press \'q\' to quit game, or \'m\' to enter main menu", True, (94, 94, 94))
+        options_text = font.render(
+            "Press \'q\' to quit game, or \'m\' to enter main menu",
+            True,
+            (94, 94, 94)
+        )
         screen.blit(options_text, (125, 570))
 
-    def load_image(self):
-        self.image = pygame.transform.scale(pygame.image.load(f'assets/{self.name.lower()}.png'), (200, 200))
+    def load_image(self) -> None:
+        """
+        A method for loading pets image upon load
+        :return: None
+        """
+        self.image = pygame.transform.scale(
+            pygame.image.load(f'assets/{self.name.lower()}.png'),
+            (200, 200)
+        )

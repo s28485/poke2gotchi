@@ -1,8 +1,15 @@
-import pygame
+"""
+A module used for a custom button class
+"""
+
 from typing import Callable, Tuple, Optional
+import pygame
 
 
 class Button:
+    """
+    A class that represents a custom button
+    """
     def __init__(self,
                  x: int,
                  y: int,
@@ -20,7 +27,11 @@ class Button:
         self.font = pygame.font.SysFont('Arial', 24)
 
     def draw(self, screen: pygame.Surface) -> None:
-        """Draw the button on the screen"""
+        """
+        A method used for drawing the button
+        :param screen: A screen in which the button is drawn
+        :return: None
+        """
         mouse_pos = pygame.mouse.get_pos()
         is_hovering = self.rect.collidepoint(mouse_pos)
 
@@ -34,19 +45,18 @@ class Button:
         screen.blit(text_surface, text_rect)
 
 
-    def handle_event(self, event: pygame.event) -> bool:
-        """Handle mouse click events and execute the command"""
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.rect.collidepoint(event.pos):
-                if self.command:
-                    self.command()
-                return True
-        return False
-
     def set_command(self, new_command: Callable) -> None:
-        """Change the button's command to a new function"""
+        """
+        A method used for setting the button command
+        :param new_command: A new command to be set
+        :return: None
+        """
         self.command = new_command
 
-    def is_pressed(self, mouse_pos) -> bool:
-        """Check if a mouse click event is pressed"""
+    def is_pressed(self, mouse_pos: tuple[int, int]) -> bool:
+        """
+        A method for checking if the button is pressed
+        :param mouse_pos: Mouse current position described in a tuple of x and y
+        :return: True if the button is pressed, False otherwise
+        """
         return self.rect.collidepoint(mouse_pos)
